@@ -7,17 +7,20 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { nixpkgs, uiua, flake-utils, ...}:
+  outputs = { nixpkgs, uiua, flake-utils, self, ...}:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
       in
       {
+        packages = {
+          uiua = uiua.packages.${system}.default;
+        };
         devShell = pkgs.mkShell {
           name = "uiua shell";
           packages = [
             pkgs.nil
-            uiua.packages.${system}.default
+            self.packages.${system}.uiua
           ];
         };
       }
