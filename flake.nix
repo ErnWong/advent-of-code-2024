@@ -26,6 +26,7 @@
             pkgs.nil
             pkgs.qemu
             self.packages.${system}.uiua
+            pkgs.swi-prolog
           ];
         };
       }
