@@ -2,10 +2,10 @@
 :- use_module(library(dcg/basics)).
 :- use_module(library(lists)).
 
-% Grammar.
+% Grammar to parse the input.
 equation(O, Is) --> integer(O), ": ", inputs(Is).
 inputs([X]) --> integer(X).
-inputs([X | [Y | Ys]]) --> integer(X), " ", inputs([Y|Ys]).
+inputs([X | [Y | Ys]]) --> integer(X), " ", inputs([Y | Ys]).
 equations([[O, Is]]) --> equation(O, Is).
 equations([[O, Is] | Es]) --> equation(O, Is), "\n", equations(Es).
 
@@ -16,8 +16,8 @@ calculation(Part, [I | Is], Result) :- calculation(Part, Is, SubResult), Result 
 calculation(Part, [I | Is], Result) :- calculation(Part, Is, SubResult), Result is SubResult * I.
 calculation(partB, [I | Is], Result) :- calculation(partB, Is, SubResult), Result is SubResult * 10 ** floor(log10(I) + 1) + I.
 
-equation_possibly_valid(Part, [O, Is]) :- reverse(Is, RIs), calculation(Part, RIs, O).
-valid_equations(Part, Equations, ValidEquations) :- include(equation_possibly_valid(Part), Equations, ValidEquations).
+valid_equation(Part, [O, Is]) :- reverse(Is, RIs), calculation(Part, RIs, O).
+valid_equations(Part, Equations, ValidEquations) :- include(valid_equation(Part), Equations, ValidEquations).
 get_output([O, _], O).
 
 solution(Part, Equations, Sum) :-
