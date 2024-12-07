@@ -3,11 +3,11 @@
 :- use_module(library(lists)).
 
 % Grammar to parse the input.
+equations([[O, Is]]) --> equation(O, Is).
+equations([[O, Is] | Es]) --> equation(O, Is), "\n", equations(Es).
 equation(O, Is) --> integer(O), ": ", inputs(Is).
 inputs([X]) --> integer(X).
 inputs([X | [Y | Ys]]) --> integer(X), " ", inputs([Y | Ys]).
-equations([[O, Is]]) --> equation(O, Is).
-equations([[O, Is] | Es]) --> equation(O, Is), "\n", equations(Es).
 
 % Values resulting from all possible combination of operators.
 % Note: Inputs list is reversed
