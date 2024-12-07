@@ -91,9 +91,9 @@ end_of_read_map:
 	#    li t0, 0xA
 	#    sb t0, (s0)
 visit:
-	# Newline
-	li t0, 0xA
-	sb t0, (s0)
+	#    # Newline
+	#    li t0, 0xA
+	#    sb t0, (s0)
 
 	# t0 = current guard address
 	mul t0, s7, s4
@@ -176,9 +176,9 @@ sum_loop:
 	j sum_loop
 
 print_sum:
-	# Newline
-	li s3, 0xA
-	sb s3, (s0)
+	#    # Newline
+	#    li s3, 0xA
+	#    sb s3, (s0)
 
 	mv t2, s2                       # Address for digit queue - Reuse the map address
 	li t3, 0                        # Number of digits

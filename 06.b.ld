@@ -4,6 +4,6 @@ MEMORY {
 
 SECTIONS {
     .text : {
-        06.o(.text.bios)
+        06.b.o(.text.bios)
     } >dram_space
 }
