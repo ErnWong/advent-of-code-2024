@@ -11,15 +11,20 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        #riscv-pkgs = import nixpkgs {
+        #  inherit system;
+        #  crossSystem.config = "riscv64";
+        #};
       in
       {
         packages = {
           uiua = uiua.packages.${system}.default;
         };
-        devShell = pkgs.mkShell {
+        devShell = pkgs.pkgsCross.riscv64.mkShell {
           name = "uiua shell";
           packages = [
             pkgs.nil
+            pkgs.qemu
             self.packages.${system}.uiua
           ];
         };
