@@ -30,7 +30,7 @@ read_map_byte:
 	beq t0, x0, read_map_byte       # Skip reading if there's no data to read
 
 	lb t0, (s0)                     # Read one byte of the map
-	sb t0, (s0) # debug
+	#    sb t0, (s0) # debug
 	
 parse_end_of_transmission:
 	li t1, 0x4 # (end-of-transmission ascii character)
@@ -78,18 +78,18 @@ parse_end_for_map_cell:
 	sb t0, (s3)                     # Append to map
 	addi s3, s3, 1                  # Update our map size
 
-	#debug coords
-	addi t1, s10, 0x41
-	sb t1, (s0)
-	addi t1, s11, 0x61
-	sb t1, (s0)
+	#    #debug coords
+	#    addi t1, s10, 0x41
+	#    sb t1, (s0)
+	#    addi t1, s11, 0x61
+	#    sb t1, (s0)
 parse_end_for_byte:
 	j read_map_byte
 
 end_of_read_map:
-	# Debug Newline
-	li t0, 0xA
-	sb t0, (s0)
+	#    # Debug Newline
+	#    li t0, 0xA
+	#    sb t0, (s0)
 visit:
 	# Newline
 	li t0, 0xA
@@ -126,14 +126,14 @@ try_advance:
 	# Otherwise, save the new guard position, and continue visiting
 	mv s6, t1
 	mv s7, t2
-	li t3, 0x4D #debug 'M'
-	sb t3, (s0) #debug
+	#    li t3, 0x4D #debug 'M'
+	#    sb t3, (s0) #debug
 	j visit
 
 rotate:
 	# Rotate 90deg and try again
-	li t1, 0x52 #debug 'R'
-	sb t1, (s0) #debug
+	#        li t1, 0x52 #debug 'R'
+	#        sb t1, (s0) #debug
 	mv t1, s8
 	li t2, -1
 	mul s8, s9, t2
@@ -141,16 +141,16 @@ rotate:
 	j try_advance
 
 left_the_map:
-	#debug coords
-	addi t1, s6, 0x41
-	sb t1, (s0)
-	addi t1, s7, 0x61
-	sb t1, (s0)
-	#debug size map
-	addi t1, s4, 0x41
-	sb t1, (s0)
-	addi t1, s5, 0x61
-	sb t1, (s0)
+	#    #debug coords
+	#    addi t1, s6, 0x41
+	#    sb t1, (s0)
+	#    addi t1, s7, 0x61
+	#    sb t1, (s0)
+	#    #debug size map
+	#    addi t1, s4, 0x41
+	#    sb t1, (s0)
+	#    addi t1, s5, 0x61
+	#    sb t1, (s0)
 
 	mv t0, s2                       # Init read address for looping through map
 	li t1, 0                        # Init count
