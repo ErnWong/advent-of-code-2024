@@ -30,7 +30,7 @@ read_map_byte:
 	beq t0, x0, read_map_byte       # Skip reading if there's no data to read
 
 	lb t0, (s0)                     # Read one byte of the map
-	    sb t0, (s0) # debug
+	    #sb t0, (s0) # debug
 	
 parse_end_of_transmission:
 	li t1, 0x4 # (end-of-transmission ascii character)
@@ -74,11 +74,11 @@ parse_end_for_guard:
 	mv s6, s10                      # Set guard initial x coord
 	mv s7, s11                      # Set guard initial y coord
 parse_end_for_map_cell:
-	    #debug coords
-	    addi t1, s10, 0x41
-	    sb t1, (s0)
-	    addi t1, s11, 0x61
-	    sb t1, (s0)
+	    ##debug coords
+	    #addi t1, s10, 0x41
+	    #sb t1, (s0)
+	    #addi t1, s11, 0x61
+	    #sb t1, (s0)
 	addi s10, s10, 1                # Increment current X coord
 	sb t0, (s3)                     # Append to map
 	addi s3, s3, 1                  # Update our map size
@@ -86,17 +86,17 @@ parse_end_for_byte:
 	j read_map_byte
 
 end_of_read_map:
-	    # Debug Newline
-	    li t0, 0xA
-	    sb t0, (s0)
+	    ## Debug Newline
+	    #li t0, 0xA
+	    #sb t0, (s0)
 
 	li a0, 0                        # a0 = the number of obstacle positions that work
 	mv a1, s2                       # a1 = the current obstacle position as a map address
 
 try_obstacle:
-	    # Newline
-	    li t0, 0xA
-	    sb t0, (s0)
+	    ## Newline
+	    #li t0, 0xA
+	    #sb t0, (s0)
 
 	# Reset guard state
 	mv a2, s6                       # a2 = Current guard X coord
@@ -116,17 +116,17 @@ reset_visited:
 	j reset_visited
 
 visit:
-	    # Newline
-	    #li t0, 0xA
+	    ## Newline
+	    ##li t0, 0xA
+	    ##sb t0, (s0)
+	    ##debug coords
+	    #addi t0, a2, 0x41
 	    #sb t0, (s0)
-	    #debug coords
-	    addi t0, a2, 0x41
-	    sb t0, (s0)
-	    addi t0, a3, 0x61
-	    sb t0, (s0)
-	    # Debug space
-	    li t0, 0x20
-	    sb t0, (s0)
+	    #addi t0, a3, 0x61
+	    #sb t0, (s0)
+	    ## Debug space
+	    #li t0, 0x20
+	    #sb t0, (s0)
 
 	# t0 = address to visited 2d array for current guard position
 	# The visited 2d array lives immediately after the original map
@@ -172,20 +172,20 @@ try_advance:
 	# Otherwise, save the new guard position, and continue visiting
 	mv a2, t1
 	mv a3, t2
-	    li t3, 0x4D #debug 'M'
-	    sb t3, (s0) #debug
-	    # Debug space
-	    li t0, 0x20
-	    sb t0, (s0)
+	    #li t3, 0x4D #debug 'M'
+	    #sb t3, (s0) #debug
+	    ## Debug space
+	    #li t0, 0x20
+	    #sb t0, (s0)
 	j visit
 
 rotate:
 	# Rotate 90deg and try again
-		li t1, 0x52 #debug 'R'
-		sb t1, (s0) #debug
-	    # Debug space
-	    li t0, 0x20
-	    sb t0, (s0)
+		#li t1, 0x52 #debug 'R'
+		#sb t1, (s0) #debug
+		## Debug space
+		#li t0, 0x20
+		#sb t0, (s0)
 	mv t1, a4
 	li t2, -1
 	mul a4, a5, t2
@@ -195,11 +195,11 @@ rotate:
 	j try_advance
 
 end_of_try_obstacle_success:
-	    # Debug space
-	    li t0, 0x20
-	    sb t0, (s0)
-	    li t3, 0x73 #debug 's'
-	    sb t3, (s0) #debug
+	    ## Debug space
+	    #li t0, 0x20
+	    #sb t0, (s0)
+	    #li t3, 0x73 #debug 's'
+	    #sb t3, (s0) #debug
 	add a0, a0, 1                   # Increment number of successful obstacles
 end_of_try_obstacle_fail:
 	# Try the next obstacle
@@ -208,9 +208,9 @@ end_of_try_obstacle_fail:
 	j try_obstacle
 
 print_number_of_successful_obstacles:
-	    # Newline
-	    li s3, 0xA
-	    sb s3, (s0)
+	    ## Newline
+	    #li s3, 0xA
+	    #sb s3, (s0)
 
 	mv t2, s2                       # Address for digit queue - Reuse the map address
 	li t3, 0                        # Number of digits
