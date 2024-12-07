@@ -74,7 +74,7 @@ parse_end_for_guard:
 	mv s6, s10                      # Set guard initial x coord
 	mv s7, s11                      # Set guard initial y coord
 parse_end_for_map_cell:
-	addi s10, s10, 1                # Increment current Y coord
+	addi s10, s10, 1                # Increment current X coord
 	sb t0, (s3)                     # Append to map
 	addi s3, s3, 1                  # Update our map size
 

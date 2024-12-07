@@ -30,7 +30,7 @@ read_map_byte:
 	beq t0, x0, read_map_byte       # Skip reading if there's no data to read
 
 	lb t0, (s0)                     # Read one byte of the map
-	#    sb t0, (s0) # debug
+	    sb t0, (s0) # debug
 	
 parse_end_of_transmission:
 	li t1, 0x4 # (end-of-transmission ascii character)
@@ -74,111 +74,143 @@ parse_end_for_guard:
 	mv s6, s10                      # Set guard initial x coord
 	mv s7, s11                      # Set guard initial y coord
 parse_end_for_map_cell:
-	addi s10, s10, 1                # Increment current Y coord
+	    #debug coords
+	    addi t1, s10, 0x41
+	    sb t1, (s0)
+	    addi t1, s11, 0x61
+	    sb t1, (s0)
+	addi s10, s10, 1                # Increment current X coord
 	sb t0, (s3)                     # Append to map
 	addi s3, s3, 1                  # Update our map size
-
-	#    #debug coords
-	#    addi t1, s10, 0x41
-	#    sb t1, (s0)
-	#    addi t1, s11, 0x61
-	#    sb t1, (s0)
 parse_end_for_byte:
 	j read_map_byte
 
 end_of_read_map:
-	#    # Debug Newline
-	#    li t0, 0xA
-	#    sb t0, (s0)
+	    # Debug Newline
+	    li t0, 0xA
+	    sb t0, (s0)
+
+	li a0, 0                        # a0 = the number of obstacle positions that work
+	mv a1, s2                       # a1 = the current obstacle position as a map address
+
+try_obstacle:
+	    # Newline
+	    li t0, 0xA
+	    sb t0, (s0)
+
+	# Reset guard state
+	mv a2, s6                       # a2 = Current guard X coord
+	mv a3, s7                       # a3 = Current guard Y coord
+	mv a4, s8                       # a4 = Current guard velocity X
+	mv a5, s9                       # a5 = Current guard velocity Y
+	li a6, 0                        # a6 = Current guard orientation mod 4
+
+	# Loop to reset all visited flags
+	mv t0, s3                       # t0 = write pointer into visited array
+	sub t1, s3, s2                  # t1 = decreasing loop counter remaining
+reset_visited:
+	addi t1, t1, -1                 # Decrement loop counter
+	blt t1, x0, visit               # Exit out of loop once we have cleared all visit flags
+	sb x0, (t0)                     # Clear visited flags
+	addi t0, t0, 1                  # Advance write pointer to next visited flag
+	j reset_visited
+
 visit:
-	#    # Newline
-	#    li t0, 0xA
-	#    sb t0, (s0)
+	    # Newline
+	    #li t0, 0xA
+	    #sb t0, (s0)
+	    #debug coords
+	    addi t0, a2, 0x41
+	    sb t0, (s0)
+	    addi t0, a3, 0x61
+	    sb t0, (s0)
+	    # Debug space
+	    li t0, 0x20
+	    sb t0, (s0)
 
-	# t0 = current guard address
-	mul t0, s7, s4
-	add t0, t0, s6
-	add t0, t0, s2
+	# t0 = address to visited 2d array for current guard position
+	# The visited 2d array lives immediately after the original map
+	mul t0, a3, s4
+	add t0, t0, a2
+	add t0, t0, s3
 
-	# Mark visited
-	li t1, 0x58 # ('X')
+	# Get the bitmask for the current orientation
+	li t2, 1
+	sll t2, t2, a6
+
+	# Check if the current square had already been visited in the current orientation
+	lb t1, (t0)
+	and t3, t1, t2
+	bne t3, x0, end_of_try_obstacle_success
+
+	# Mark visited for the current orientation
+	or t1, t1, t2
 	sb t1, (t0)
 
 try_advance:
-	add t1, s6, s8                  # Candidate new guard X coord
-	add t2, s7, s9                  # Candidate new guard Y coord
+	add t1, a2, a4                  # Candidate new guard X coord
+	add t2, a3, a5                  # Candidate new guard Y coord
 	# t0 = Candidate address
 	mul t0, t2, s4
 	add t0, t0, t1
 	add t0, t0, s2
 
 	# Check bounds
-	blt t1, x0, left_the_map
-	blt t2, x0, left_the_map
-	bge t1, s4, left_the_map
-	bge t2, s5, left_the_map
+	blt t1, x0, end_of_try_obstacle_fail
+	blt t2, x0, end_of_try_obstacle_fail
+	bge t1, s4, end_of_try_obstacle_fail
+	bge t2, s5, end_of_try_obstacle_fail
 
-	# Check for obstacle - rotate if there is
+	# Check for original obstacle - rotate if there is
 	lb t3, (t0)
 	li t4, 0x23 # ('#')
 	beq t3, t4, rotate
 
+	# Check for new obstacle - rotate if there is
+	beq a1, t0, rotate
+
 	# Otherwise, save the new guard position, and continue visiting
-	mv s6, t1
-	mv s7, t2
-	#    li t3, 0x4D #debug 'M'
-	#    sb t3, (s0) #debug
+	mv a2, t1
+	mv a3, t2
+	    li t3, 0x4D #debug 'M'
+	    sb t3, (s0) #debug
+	    # Debug space
+	    li t0, 0x20
+	    sb t0, (s0)
 	j visit
 
 rotate:
 	# Rotate 90deg and try again
-	#        li t1, 0x52 #debug 'R'
-	#        sb t1, (s0) #debug
-	mv t1, s8
+		li t1, 0x52 #debug 'R'
+		sb t1, (s0) #debug
+	    # Debug space
+	    li t0, 0x20
+	    sb t0, (s0)
+	mv t1, a4
 	li t2, -1
-	mul s8, s9, t2
-	mv s9, t1
+	mul a4, a5, t2
+	mv a5, t1
+	addi a6, a6, 1
+	andi a6, a6, 3
 	j try_advance
 
-left_the_map:
-	#    #debug coords
-	#    addi t1, s6, 0x41
-	#    sb t1, (s0)
-	#    addi t1, s7, 0x61
-	#    sb t1, (s0)
-	#    #debug size map
-	#    addi t1, s4, 0x41
-	#    sb t1, (s0)
-	#    addi t1, s5, 0x61
-	#    sb t1, (s0)
+end_of_try_obstacle_success:
+	    # Debug space
+	    li t0, 0x20
+	    sb t0, (s0)
+	    li t3, 0x73 #debug 's'
+	    sb t3, (s0) #debug
+	add a0, a0, 1                   # Increment number of successful obstacles
+end_of_try_obstacle_fail:
+	# Try the next obstacle
+	add a1, a1, 1
+	beq a1, s3, print_number_of_successful_obstacles
+	j try_obstacle
 
-	mv t0, s2                       # Init read address for looping through map
-	li t1, 0                        # Init count
-sum_loop:
-	bge t0, s3, print_sum           # Exit if we've reached the end of the map
-
-	# Increment count if map position is visited, using convoluted branchless equality
-	li t6, 1
-	li t6, 5
-	li t6, 5
-	li t6, 5
-	li t6, 5
-	li t6, 1
-	lb t3, (t0)
-	slti t4, t3, 0x58 # ('X' character)
-	not t4, t4
-	slti t5, t3, 0x59 # (one after 'X' character)
-	and t6, t4, t5
-	add t1, t1, t6
-
-	# Advance to next position on the map
-	addi t0, t0, 1
-	j sum_loop
-
-print_sum:
-	#    # Newline
-	#    li s3, 0xA
-	#    sb s3, (s0)
+print_number_of_successful_obstacles:
+	    # Newline
+	    li s3, 0xA
+	    sb s3, (s0)
 
 	mv t2, s2                       # Address for digit queue - Reuse the map address
 	li t3, 0                        # Number of digits
@@ -189,8 +221,8 @@ print_sum:
 	sb t5, (t2)
 
 push_digit:	
-	beq t1, x0, print_digit         # Exit if we've exhausted the digits
-	rem t5, t1, t4                  # Find the least significant decimal digit
+	beq a0, x0, print_digit         # Exit if we've exhausted the digits
+	rem t5, a0, t4                  # Find the least significant decimal digit
 	addi t5, t5, 0x30 # ('0')       # Convert digit to ASCII
 
 	# Push onto digit stack
@@ -199,7 +231,7 @@ push_digit:
 	addi t3, t3, 1
 
 	# Divide by 10 and loop for the next digit
-	div t1, t1, t4
+	div a0, a0, t4
 	j push_digit
 print_digit:
 	lb t5, (t2)                     # Load digit character
