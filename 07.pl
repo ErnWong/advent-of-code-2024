@@ -11,21 +11,22 @@ equations([[O, Is] | Es]) --> equation(O, Is), "\n", equations(Es).
 
 % Values resulting from all possible combination of operators.
 % Note: Inputs list is reversed
-calculation([I], I).
-calculation([I | Is], Result) :- calculation(Is, SubResult), Result is I + SubResult.
-calculation([I | Is], Result) :- calculation(Is, SubResult), Result is I * SubResult.
+calculation(_, [I], I).
+calculation(Part, [I | Is], Result) :- calculation(Part, Is, SubResult), Result is SubResult + I.
+calculation(Part, [I | Is], Result) :- calculation(Part, Is, SubResult), Result is SubResult * I.
+calculation(partB, [I | Is], Result) :- calculation(partB, Is, SubResult), Result is SubResult * 10 ** floor(log10(I) + 1) + I.
 
-equation_possibly_valid([O, Is]) :- reverse(Is, RIs), calculation(RIs, O).
-valid_equations(Equations, ValidEquations) :- include(equation_possibly_valid, Equations, ValidEquations).
+equation_possibly_valid(Part, [O, Is]) :- reverse(Is, RIs), calculation(Part, RIs, O).
+valid_equations(Part, Equations, ValidEquations) :- include(equation_possibly_valid(Part), Equations, ValidEquations).
 get_output([O, _], O).
 
-partA(Equations, Sum) :-
-    valid_equations(Equations, ValidEquations),
+solution(Part, Equations, Sum) :-
+    valid_equations(Part, Equations, ValidEquations),
     maplist(get_output, ValidEquations, ValidOutputs),
     sumlist(ValidOutputs, Sum).
 
-partAExample :-
-    phrase(equations(Equations), "190: 10 19
+example(
+"190: 10 19
 3267: 81 40 27
 83: 17 5
 156: 15 6
@@ -33,7 +34,17 @@ partAExample :-
 161011: 16 10 13
 192: 17 8 14
 21037: 9 7 18 13
-292: 11 6 16 20"),
-    partA(Equations, 3749).
+292: 11 6 16 20").
 
-:- phrase_from_file(equations(Equations), "07.txt"), partA(Equations, Answer), write(Answer).
+partAExample :-
+    example(Input),
+    phrase(equations(Equations), Input),
+    solution(partA, Equations, 3749).
+
+partBExample :-
+    example(Input),
+    phrase(equations(Equations), Input),
+    solution(partB, Equations, 11387).
+
+:- phrase_from_file(equations(Equations), "07.txt"), solution(partA, Equations, Answer), write(Answer), write('\n').
+:- phrase_from_file(equations(Equations), "07.txt"), solution(partB, Equations, Answer), write(Answer).
