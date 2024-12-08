@@ -27,6 +27,7 @@
             pkgs.qemu
             self.packages.${system}.uiua
             pkgs.rustc
+            pkgs.rustfmt
             pkgs.cargo
             pkgs.swi-prolog
             pkgs.gcc
