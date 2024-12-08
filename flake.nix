@@ -26,8 +26,14 @@
             pkgs.nil
             pkgs.qemu
             self.packages.${system}.uiua
+            pkgs.rustc
+            pkgs.cargo
             pkgs.swi-prolog
+            pkgs.gcc
           ];
+
+          # Needed for rust analyzer
+          RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
         };
       }
     );
